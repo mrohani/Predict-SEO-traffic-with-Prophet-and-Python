@@ -1,7 +1,0 @@
-import pandas as pd
-df = pd.read_excel ('.xlsx', sheet_name= "")
-df = df.drop(len(df) - 1)
-We can draw with Matplotlib how the data looks like:
-from matplotlib import pyplot
-df["Sesiones"].plot(title = "Sesiones")
-pyplot.show()
