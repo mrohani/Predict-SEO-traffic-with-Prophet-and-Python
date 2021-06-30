@@ -1,3 +1,5 @@
+### ==== Importing the data from an Excel file
+
 import pandas as pd
 
 df = pd.read_excel ('.xlsx', sheet_name= "")
@@ -10,7 +12,7 @@ from matplotlib import pyplot
 df["Sesiones"].plot(title = "Sesiones")
 pyplot.show()
 
-
+## ==== Using Google Analytics API
 
 from apiclient.discovery import build
 from oauth2client.service_account import ServiceAccountCredentials
@@ -22,6 +24,7 @@ VIEW_ID = ''
 credentials = ServiceAccountCredentials.from_json_keyfile_name(KEY_FILE_LOCATION, SCOPES)
 analytics = build('analyticsreporting', 'v4', credentials=credentials)
 
+## === authenticating
 
 response = analytics.reports().batchGet(body={
   'reportRequests': [{
@@ -36,23 +39,27 @@ response = analytics.reports().batchGet(body={
 "includeEmptyRows": "true"
 }]}).execute()
 
+## ==== response file to append to a list the days with their organic sessions
 
-	df.columns = ['ds', 'y']
+list_values = []
+for x in response["reports"][0]["data"]["rows"]:
+list_values.append([x["dimensions"][0],x["metrics"][0]["values"][0]])
 
+## ===== Adapting the lists to Dataframes
 
-	from pandas import DataFrame
-df_sessions = DataFrame(list_values,columns=['ds','y'])
-
-
-
-
+df.columns = ['ds', 'y']
+from pandas import DataFrame
+df_sessions = DataFrame(list_values,columns=['ds','y'])	
+	
+## === Training the model	
+	
 import fbprophet
 from fbprophet import Prophet
 
 model = Prophet()
 model.fit(df_sessions)
 
-
+## == Making our predictions
 
 from pandas import to_datetime
 
@@ -78,7 +85,7 @@ train = df_sessions.drop(df_sessions.index[-12:])
 future = df_sessions.loc[df_sessions["ds"]> train.iloc[len(train)-1]["ds"]]["ds"]
 
 
-
+## === Evaluating the model
 
 from sklearn.metrics import mean_absolute_error
 import numpy as np
